@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dicypo Translator</title>
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #0a0a0a, #1c1c1c);
+        color: #fff;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* Login Screen */
+    #loginScreen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        text-align: center;
+        transition: opacity 0.5s ease;
+    }
+    #loginScreen h1 {
+        font-size: 2rem;
+        margin-bottom: 20px;
+        opacity: 1;
+        transition: opacity 0.5s ease;
+    }
+    #loginScreen input {
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 6px;
+        border: none;
+        outline: none;
+        text-align: center;
+        width: 250px;
+        background: #111;
+        color: #0f0;
+        border: 2px solid #333;
+    }
+    #loginScreen input:focus {
+        border-color: #0f0;
+    }
+    #loginScreen button {
+        margin-top: 10px;
+        padding: 8px 14px;
+        border: none;
+        border-radius: 6px;
+        background: #0f0;
+        color: #000;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    #loginScreen button:hover {
+        background: #9f9;
+    }
+
+    /* Translator UI */
+    #translator {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        animation: fadeIn 0.5s ease forwards;
+    }
+    .container {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    .box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    textarea {
+        width: 320px;
+        height: 200px;
+        margin-bottom: 10px;
+        background: #111;
+        color: #0f0;
+        font-size: 18px;
+        padding: 15px;
+        border: 2px solid #333;
+        border-radius: 10px;
+        resize: none;
+        transition: border 0.3s;
+    }
+    textarea:focus {
+        outline: none;
+        border-color: #0f0;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    .action-buttons button {
+        background: #0f0;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 6px;
+        color: #000;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        transition: background 0.3s;
+    }
+    .action-buttons button:hover {
+        background: #9f9;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="loginScreen">
+    <h1 id="accessText">[ Access denied. ]</h1>
+    <input type="text" id="idInput" placeholder="Enter ID">
+    <button onclick="checkAccess()">Submit</button>
+</div>
+
+<!-- Translator -->
+<div id="translator">
+    <h1>Dicypo Translator</h1>
+    <div class="container">
+        <div class="box">
+            <textarea id="englishBoxDicypo" placeholder="Type English here..."></textarea>
+            <div class="action-buttons">
+                <button onclick="copyText('englishBoxDicypo')">Copy</button>
+                <button onclick="clearText('englishBoxDicypo')">Clear</button>
+            </div>
+        </div>
+        <div class="box">
+            <textarea id="symbolBoxDicypo" placeholder="Type Dicypo here..."></textarea>
+            <div class="action-buttons">
+                <button onclick="copyText('symbolBoxDicypo')">Copy</button>
+                <button onclick="clearText('symbolBoxDicypo')">Clear</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const validIDs = ["Bar221cdgheacm", "Kenj382jduendka"];
+
+    function checkAccess() {
+        const input = document.getElementById("idInput").value.trim();
+        const accessText = document.getElementById("accessText");
+
+        if (validIDs.includes(input)) {
+            accessText.textContent = "[ Access granted. ]";
+            accessText.style.color = "#0f0";
+            setTimeout(() => {
+                document.getElementById("loginScreen").style.opacity = "0";
+                setTimeout(() => {
+                    document.getElementById("loginScreen").style.display = "none";
+                    document.getElementById("translator").style.display = "flex";
+                }, 500);
+            }, 2000);
+        } else {
+            accessText.textContent = "[ Access denied. ]";
+            accessText.style.color = "#f00";
+        }
+    }
+
+    // Copy & Clear
+    function copyText(id) {
+        const textArea = document.getElementById(id);
+        textArea.select();
+        document.execCommand("copy");
+    }
+    function clearText(id) {
+        document.getElementById(id).value = "";
+    }
+
+    // Dicypo cipher
+    const dicypoMap = {
+        "a": "⚡", "b": "☀", "c": "❄", "d": "☂", "e": "✿",
+        "f": "❖", "g": "☯", "h": "♠", "i": "♣", "j": "♥",
+        "k": "♦", "l": "♪", "m": "♫", "n": "✦", "o": "✩",
+        "p": "☾", "q": "☽", "r": "☢", "s": "☣", "t": "☤",
+        "u": "☥", "v": "☦", "w": "☧", "x": "☨", "y": "☩",
+        "z": "☪", " ": "⬤"
+    };
+    const dicypoReverse = {};
+    for (let k in dicypoMap) dicypoReverse[dicypoMap[k]] = k;
+
+    function encrypt(text, map) {
+        return text.toLowerCase().split("").map(c => map[c] || c).join("");
+    }
+    function decrypt(text, reverse) {
+        return text.split("").map(s => reverse[s] || s).join("");
+    }
+
+    // Translator events
+    document.getElementById("englishBoxDicypo").addEventListener("input", function() {
+        document.getElementById("symbolBoxDicypo").value = encrypt(this.value, dicypoMap);
+    });
+    document.getElementById("symbolBoxDicypo").addEventListener("input", function() {
+        document.getElementById("englishBoxDicypo").value = decrypt(this.value, dicypoReverse);
+    });
+</script>
+
+</body>
+</html>
